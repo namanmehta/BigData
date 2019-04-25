@@ -1,0 +1,5 @@
+#2nd query for fall2018
+
+#xAPI_Edu_Data
+dftest=spark.sql("select count(distinct concat(gender,' ', nationality,' ', stageid)) as N, substring(gradeid,4,4) from xAPI_Edu_Data group by gradeId order by count(distinct concat(gender,' ', nationality,' ', stageid)) desc")
+dftest.show(1)
