@@ -1,0 +1,36 @@
+from pyspark.mllib.clustering import KMeans, KMeansModel
+from numpy import array
+from math import sqrt
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setMaster("local").setAppName("friends-by-age")
+sc = SparkContext.getOrCreate(conf = conf)
+sc
+sc.version
+
+#Load and Parse the data
+data = sc.textFile("/FileStore/tables/xAPI_Edu_Data-2676d.csv")
+parsedData = data.map(lambda line: array([x for x in line.split(',')]))
+parsedData.take(5)
+
+
+pd=parsedData.zipWithIndex().filter(lambda tup: tup[1] > 0).map(lambda tup: tup[0])  #removing first row
+
+
+#question 1
+clusterParameter = pd.map(lambda x : array([float(x[9]),float(x[10]),float(x[11]),float(x[12])]))
+
+clusters = KMeans.train(clusterParameter, 4, maxIterations=10, initializationMode="random")
+
+# Evaluate clustering by computing Within Set Sum of Squared Errors
+def error(point):
+  center = clusters.centers[clusters.predict(point)]
+  return sqrt(sum([x**2 for x in (point - center)]))
+WSSSE = clusterParameter.map(lambda point: error(point)).reduce(lambda x, y: x + y)
+print("Within Set Sum of Squared Error = " + str(WSSSE))
+
+#question2
+
+cp=pd.map(lambda x: (float(x[9])+float(x[10])+float(x[11])+float(x[12]))/4)
+
+for i in cp.collect():
+  print(i)
