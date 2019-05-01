@@ -38,14 +38,14 @@ while(k<6):
 cluster_assignments = clusters.predict(clusterParameter)
 assigned_clusters = clusterParameter.zip(cluster_assignments)
 centroids = clusters.clusterCenters
+
+#question2
 clusterone = assigned_clusters.map(lambda x : (x,1))
 clustercount = clusterone.map(lambda x : (x[0][1],x[1])).reduceByKey(lambda x,y : x+y)
 clustercount.collect()
 
 
-#question2
+#test  cp=pd.map(lambda x: (float(x[9])+float(x[10])+float(x[11])+float(x[12]))/4)
 
-cp=pd.map(lambda x: (float(x[9])+float(x[10])+float(x[11])+float(x[12]))/4)
 
-for i in cp.collect():
-  print(i)
+
