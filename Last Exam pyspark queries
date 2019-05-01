@@ -25,8 +25,23 @@ clusters = KMeans.train(clusterParameter, 4, maxIterations=10, initializationMod
 def error(point):
   center = clusters.centers[clusters.predict(point)]
   return sqrt(sum([x**2 for x in (point - center)]))
-WSSSE = clusterParameter.map(lambda point: error(point)).reduce(lambda x, y: x + y)
-print("Within Set Sum of Squared Error = " + str(WSSSE))
+#WSSSE = clusterParameter.map(lambda point: error(point)).reduce(lambda x, y: x + y)
+#print("Within Set Sum of Squared Error = " + str(WSSSE))
+
+k=1
+WSS={}
+while(k<6):
+  clusters = KMeans.train(clusterParameter, k=k, maxIterations=10, initializationMode="random")
+  WSSE = clusterParameter.map(lambda point: error(point)).reduce(lambda x, y: x + y)
+  WSS[k]=WSSE
+  k=k+1
+cluster_assignments = clusters.predict(clusterParameter)
+assigned_clusters = clusterParameter.zip(cluster_assignments)
+centroids = clusters.clusterCenters
+clusterone = assigned_clusters.map(lambda x : (x,1))
+clustercount = clusterone.map(lambda x : (x[0][1],x[1])).reduceByKey(lambda x,y : x+y)
+clustercount.collect()
+
 
 #question2
 
