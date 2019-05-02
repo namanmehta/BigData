@@ -1,0 +1,60 @@
+#used when data needs to parse
+# All basic imports
+from numpy import array
+from math import sqrt
+import numpy as np
+import pandas as pd
+
+from pyspark.mllib.clustering import KMeans
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setMaster('local[*]').setAppName("KMeans-gunViolence-Data")
+sc = SparkContext.getOrCreate(conf = conf)
+
+import warnings
+warnings.filterwarnings('ignore')
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+plt.style.use("ggplot")
+plt.rcParams["figure.figsize"] = [12,8]
+mpl.rc('axes', labelsize=14)
+mpl.rc('xtick', labelsize=10)
+mpl.rc('ytick', labelsize=10)
+
+data = sc.textFile("/FileStore/tables/gun_violence_data-9fa0e.csv")
+header = data.first()
+data = data.filter(lambda line:line != header)
+
+4def parseData(line):
+    try:
+        alist = line.split('"')
+        state = alist[0].split(',')[2]
+        latitude = float(alist[2].split(',')[1]) 
+        longitude = float(alist[2].split(',')[3])
+    except:
+        return('',0,0)
+    return (state,longitude, latitude)
+    
+    rdd = data.map(parseData)
+    rdd.take(5)
+    states = rdd.map(lambda x: (x[0],1))
+    
+    states = states.filter(lambda x: x[0] not in ['',' ',None])
+    
+    sorted(states.reduceByKey(lambda x,y: x+y).collect())
+    
+    clusterParameter = rdd.map(lambda x : array([float(x[1]),float(x[2])]))
+    
+    #clusters = KMeans.train(clusterParameter, k = 3, maxIterations=100, runs=10, initializationMode="random")
+    
+    def error(point):
+        center = clusters.centers[clusters.predict(point)]
+        return sqrt(sum([x**2 for x in (point - center)]))
+        
+   k = 1
+WSS = {}
+while(k<13):
+    clusters = KMeans.train(clusterParameter, k = k, maxIterations=100, runs=10, initializationMode="random")
+    WSSSE = (clusterParameter.map(lambda point: error(point)).reduce(lambda x, y: x + y))
+    WSS[k] = WSSSE
+    k = k + 1
