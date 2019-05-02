@@ -1,0 +1,12 @@
+from pyspark.mllib.stat import Statistics
+data = sc.textFile("/FileStore/tables/xAPI_Edu_Data-2676d.csv")
+#parsedData = data.map(lambda line: array([x for x in line.split(',')]))
+df1 = spark.read.csv('/FileStore/tables/xAPI_Edu_Data-2676d.csv', inferSchema =True, header = True)
+
+from pyspark.ml.feature import VectorAssembler
+
+assembler = VectorAssembler(inputCols=['VisITedResources','raisedhands'], outputCol="features")
+#result=assembler.transform(parsedData)
+result1 = assembler.transform(df1)
+from pyspark.ml.stat import Correlation
+r1 = Correlation.corr(result1, 'features').head() ;r1
