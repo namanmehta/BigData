@@ -1,0 +1,48 @@
+--CREATE TABLE tempData (col_value STRING);
+--DROP TABLE tempData;
+--LOAD DATA INPATH '/user/hive/advertising.csv' OVERWRITE INTO TABLE tempData;
+
+--SELECT * FROM tempdata LIMIT 2;
+
+--DROP TABLE advertising;
+
+/*
+CREATE TABLE advertising(
+DTSonSite FLOAT,
+Age INT,
+AreaIncome FLOAT,
+DailyInternetUsage STRING,
+AdTopicLine STRING,
+City STRING,
+Male INT,
+Country STRING,
+Timestamp DATE,
+ClickedonAd INT
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES("skip.header.line.count"="1");
+*/
+
+/*
+INSERT OVERWRITE TABLE advertising
+SELECT
+    regexp_extract(col_value, '^(?:([^,]*),?){1}', 1) DTSonSite, 
+    regexp_extract(col_value, '^(?:([^,]*),?){2}', 1) Age,
+    regexp_extract(col_value, '^(?:([^,]*),?){3}', 1) AreaIncome,
+    regexp_extract(col_value, '^(?:([^,]*),?){4}', 1) DailyInternetUsage,
+    regexp_extract(col_value, '^(?:([^,]*),?){5}', 1) AdTopicLine,
+    regexp_extract(col_value, '^(?:([^,]*),?){6}', 1) City,
+    regexp_extract(col_value, '^(?:([^,]*),?){7}', 1) Male,
+    regexp_extract(col_value, '^(?:([^,]*),?){8}', 1) Country,
+    regexp_extract(col_value, '^(?:([^,]*),?){9}', 1) Timestamp,
+    regexp_extract(col_value, '^(?:([^,]*),?){10}', 1) ClickedonAd
+from tempData;
+*/
+
+SELECT count(*) FROM advertising 
+WHERE ClickedonAd = 1;
+
+SELECT count(*) FROM advertising 
+WHERE ClickedonAd = 1 and Male = 1;
+
+SELECT count(*) FROM advertising 
+WHERE ClickedonAd = 1 and Male = 0;
