@@ -1,0 +1,55 @@
+#Create a K-Mean (K=4) cluster with Raisedhands, VisitedResources, AnnouncementView and Discussion. (Spark) 
+from pyspark.mllib.clustering import KMeans, KMeansModel
+from pyspark.ml.regression import LinearRegression
+from pyspark.mllib.stat import Statistics
+from pyspark.ml.linalg import Vectors
+from numpy import array
+from math import sqrt
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setMaster("local").setAppName("friends-by-age")
+sc = SparkContext.getOrCreate(conf = conf)
+sc
+sc.version
+
+student_rdd = sc.textFile("/FileStore/tables/xAPI_Edu_Data-2676d.csv")
+student_rdd.take(3)
+
+#removing 1st Row, as it is header and contains column names
+header = student_rdd.first()
+student_rdd = student_rdd.filter(lambda x : x != header)
+
+student_rdd.take(2)
+
+parsedData = student_rdd.map(lambda line: array([x for x in line.split(',')]))
+parsedData.take(2)
+
+#Creating Labels and Features for the data 
+dataLR = parsedData.map(lambda x: (float(x[9]), Vectors.dense(float(x[10]),float(x[11]),float(x[12]))))
+
+dataLR.take(5)
+
+# Convert this RDD to a DataFrame
+colNames = ["label", "features"]
+df = dataLR.toDF(colNames)
+df.show(4)
+
+# Let's split our data into training data and testing data
+trainTest = df.randomSplit([0.7, 0.3])
+trainingDF = trainTest[0]
+testDF = trainTest[1]
+# Now create our linear regression model
+lir = LinearRegression(maxIter=10, regParam=0.3, elasticNetParam=0.8)
+
+# Train the model using our training data
+model = lir.fit(trainingDF)
+fullPredictions = model.transform(testDF).cache()
+# Extract the predictions and the "known" correct labels.
+predictions = fullPredictions.select("prediction").rdd.map(lambda x: x[0])
+labels = fullPredictions.select("label").rdd.map(lambda x: x[0])
+
+# Zip them together
+predictionAndLabel = predictions.zip(labels).collect()
+
+# Print out the predicted and actual values for each point
+for prediction in predictionAndLabel:
+  print(prediction)
